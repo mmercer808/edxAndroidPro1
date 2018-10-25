@@ -68,11 +68,8 @@ public class LoginModelImpl implements LoginModel {
         protected void onPostExecute(final Boolean success) {
 
             if (success) {
-                // Toast.makeText(LoginActivity.this, "Success", Toast.LENGTH_SHORT).show();
                 listener.onSuccess();
             } else {
-                // mPasswordView.setError(getString(R.string.error_incorrect_password));
-                // mPasswordView.requestFocus();
                 listener.onPasswordError();
             }
         }

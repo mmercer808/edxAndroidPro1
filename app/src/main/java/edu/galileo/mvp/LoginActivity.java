@@ -16,14 +16,9 @@ import android.widget.Toast;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements LoginView {
 
-
-    /**
-     * Keep track of the login task to ensure we can cancel it if requested.
-     */
-    // private UserLoginTask mAuthTask = null;
-    private LoginModelImpl.UserLoginTask mAuthTask = null;
+    private LoginPresenter loginPresenter;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -51,6 +46,9 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        loginPresenter = new LoginPresenterImpl(this);
+
     }
 
     /**
@@ -59,9 +57,6 @@ public class LoginActivity extends AppCompatActivity {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (mAuthTask != null) {
-            return;
-        }
 
         // Reset errors.
         mEmailView.setError(null);
@@ -70,54 +65,15 @@ public class LoginActivity extends AppCompatActivity {
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
-
-        boolean cancel = false;
-        View focusView = null;
-
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        }
-
-        // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
-            focusView = mEmailView;
-            cancel = true;
-        } else if (!isEmailValid(email)) {
-            mEmailView.setError(getString(R.string.error_invalid_email));
-            focusView = mEmailView;
-            cancel = true;
-        }
-
-        if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
-            focusView.requestFocus();
-        } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
-            mAuthTask.execute((Void) null);
-        }
+        loginPresenter.validateCredentials(email, password);
     }
 
-    private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
-        return email.contains("@");
-    }
 
-    private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
      */
+    @Override
     public void showProgress(final boolean show) {
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
@@ -142,6 +98,21 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void setUserNameError(int messageResId) {
+        mEmailView.setError(getString(messageResId));
+        mEmailView.requestFocus();
+    }
 
+    @Override
+    public void setPasswordError(int messageResId) {
+        mPasswordView.setError(getString(messageResId));
+        mPasswordView.requestFocus();
+    }
+
+    @Override
+    public void successAction() {
+        Toast.makeText(this, "SUCCESS!!!", Toast.LENGTH_SHORT).show();
+    }
 }
 
