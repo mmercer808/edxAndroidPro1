@@ -13,6 +13,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import edu.galileo.mvp.event.CanceledEvent;
+import edu.galileo.mvp.event.PasswordErrorEvent;
+import edu.galileo.mvp.event.SuccessEvent;
+
 // JUST A TEST
 
 /**
@@ -102,6 +110,7 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
 
     @Override
     public void setUserNameError(int messageResId) {
+        // why not? String mystring = getResources().getString(R.string.mystring);
         mEmailView.setError(getString(messageResId));
         mEmailView.requestFocus();
     }
@@ -112,9 +121,33 @@ public class LoginActivity extends AppCompatActivity implements LoginView {
         mPasswordView.requestFocus();
     }
 
-    @Override
-    public void successAction() {
+    @Subscribe(threadMode=ThreadMode.MAIN)
+    public void onSuccessEvent(SuccessEvent successEvent) {
+        // listening to successEvent on main thread
+        showProgress(false);
         Toast.makeText(this, "SUCCESS!!!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Subscribe(threadMode=ThreadMode.MAIN)
+    public void onPasswordErrorEvent(PasswordErrorEvent passwordErrorEvent) {
+        showProgress(false);
+        setPasswordError(R.string.error_incorrect_password);
+    }
+
+    @Subscribe(threadMode=ThreadMode.MAIN)
+    public void onCanceledEvent(CanceledEvent onCanceledEvent) {
+        showProgress(false);
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 }
 
